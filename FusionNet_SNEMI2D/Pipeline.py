@@ -4,11 +4,29 @@
 from Utility  import *
 from Model    import *
 from Augment  import *
-from Dataflow import *
+from Dataset  import *
+
+class VisualizeRunner(Callback):
+	def _setup_graph(self):
+		self.pred = self.trainer.get_predictor(
+			['image', 'label'], ['viz'])
+
+	def _before_train(self):
+		global args
+		self.valid_ds = get_data(args.data, isTrain=False)
+
+	def _trigger(self):
+		for image, label in self.valid_ds.get_data():
+			viz_valid = self.pred(image, label)
+			viz_valid = np.squeeze(np.array(viz_valid))
+
+			#print viz_valid.shape
+
+			self.trainer.monitors.put_image('viz_valid', viz_valid)
 
 
 if __name__ == '__main__':
-	parser = argparser.ArgumentParser()
+	parser = argparse.ArgumentParser()
 	parser.add_argument('--gpu',  	help='comma seperated list of GPU(s) to use.')
 	parser.add_argument('--data',  	required=True, 
 								    help='Data directory, contain trainA/trainB/validA/validB')
@@ -16,7 +34,7 @@ if __name__ == '__main__':
 	parser.add_argument('--sample', help='Run the deployment on an instance',
 									action='store_true')
 
-	args = parser.parser_args()
+	args = parser.parse_args()
 
 	# Set the logger directory
 	logger.auto_set_dir()
@@ -39,10 +57,10 @@ if __name__ == '__main__':
 			model 			= 	Model(), 
 			dataflow 		= 	train_ds,
 			callbacks 		= 	[
-				PeriodicTrigger(every_k_epochs=100, ModelSaver()),
-				PeriodicTrigger(every_k_epochs=5,   InferenceRunner(valid_ds, [ScalarStats('loss_recon')])),
-				PeriodicTrigger(every_k_epochs=5,   VisualizeRunner(valid_ds)),
-				ScheduleHyperParamSetter('learning_rate', [(100, 1e-4), (200, 1e-5), (300, 1e-6)], interp='linear')
+				PeriodicTrigger(ModelSaver(), every_k_epochs=100),
+				PeriodicTrigger(VisualizeRunner(), every_k_epochs=5),
+				PeriodicTrigger(InferenceRunner(valid_ds, [ScalarStats('losses/loss_recon')]), every_k_epochs=5),
+				ScheduledHyperParamSetter('learning_rate', [(100, 1e-4), (200, 1e-5), (300, 1e-6)], interp='linear')
 				],
 			max_epoch		=	500, 
 			session_init	=	SaverRestore(args.load) if args.load else None,
@@ -50,9 +68,12 @@ if __name__ == '__main__':
 			)
 
 		# Train the model
-		if config.nr_tower == 1:
-			# Single GPU training
-			pass
-		else:
-			# Multi GPU training
-			pass
+		SyncMultiGPUTrainer(config).train()
+		# if config.nr_tower == 1:
+		# 	# Single GPU training
+		# 	SyncMultiGPUTrainer(config).train()
+		# 	pass
+		# else:
+		# 	# Multi GPU training
+		# 	SyncMultiGPUTrainer(config).train()
+		# 	pass

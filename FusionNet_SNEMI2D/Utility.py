@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os, sys, argparse, glob
+
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
+
 
 # Misc. libraries
 from six.moves import map, zip, range
@@ -27,8 +31,19 @@ from tensorpack.tfutils.scope_utils import auto_reuse_variable_scope
 
 # Tensorflow 
 import tensorflow as tf
+from tensorflow import layers
+# from tensorflow.contrib.layers.python import layers
 
-from tensorflow.layers import *
+# Utility function for scaling 
+def convert_to_range_tanh(x, name='ToRangeTanh'):
+	with tf.variable_scope(name):
+		return (x / 255.0 - 0.5) * 2.0
+
+def convert_to_range_imag(x, name='ToRangeImag'):
+	with tf.variable_scope(name):
+		return (x / 2.0 + 0.5) * 255.0
+		
+
 
 # Global definitions go here
 DIMN = 100		# 
@@ -37,4 +52,6 @@ DIMZ = 1
 DIMY = 512
 DIMX = 512		
 DIMC = 1		# Channel
+
+NB_FILTERS = 64
 
