@@ -59,13 +59,14 @@ class ImageDataFlow(RNGDataFlow):
 				image = self.random_flip(image, seed=seed)		
 				image = self.random_reverse(image, seed=seed)
 				image = self.random_square_rotate(image, seed=seed)			
-				image = self.random_elastic(image, seed=seed)
-				#image = skimage.util.random_noise(image, seed=seed) # TODO
+				# image = self.random_elastic(image, seed=seed)
+				# image = skimage.util.random_noise(image, seed=seed) # TODO
+				# image = skimage.util.img_as_ubyte(image)
 
 				label = self.random_flip(label, seed=seed)		
 				label = self.random_reverse(label, seed=seed)
 				label = self.random_square_rotate(label, seed=seed)	
-				label = self.random_elastic(label, seed=seed)
+				# label = self.random_elastic(label, seed=seed)
 
 
 			image = np.expand_dims(image, axis=0)
