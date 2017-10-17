@@ -25,4 +25,16 @@ from tensorpack.utils.utils import get_rng
 from tensorpack.tfutils.summary import add_moving_summary
 from tensorpack.tfutils.scope_utils import auto_reuse_variable_scope
 
+# Tensorflow 
+import tensorflow as tf
+
+from tensorflow.layers import *
+
 # Global definitions go here
+DIMN = 100		# 
+DIMB = 1		# Batch
+DIMZ = 1
+DIMY = 512
+DIMX = 512		
+DIMC = 1		# Channel
+
